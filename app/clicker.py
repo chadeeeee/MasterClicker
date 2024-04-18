@@ -1,11 +1,22 @@
-# clicker.py
 import threading
 import pyautogui
 import time
-from pynput.keyboard import Listener, Key
+import keyboard
+import mouse
 
 running = False
 stop_thread = False
+# Припускаємо, що clicker.py має такий вигляд
+button = None
+
+
+def update_button(new_button):
+    global button
+    button = new_button
+    print(f"Змінна button оновлена: {button}")
+
+
+# Інші функції в файлі...
 
 
 def auto_clicker():
@@ -14,9 +25,9 @@ def auto_clicker():
         while running:
             if stop_thread:
                 break
-            x, y = pyautogui.position()
+            x, y = mouse.get_position()
             pyautogui.click(x, y)
-            time.sleep(0.001)  # Інтервал між кліками
+            time.sleep(0.001)
     except Exception as e:
         print(f"Error in auto_clicker: {e}")
         running = False
@@ -32,19 +43,15 @@ def toggle_auto_clicker():
         stop_thread = False
         threading.Thread(target=auto_clicker).start()
 
-def on_press(key):
-    if key == Key.f9:
+
+def on_press(event):
+    if event.name == button:
         toggle_auto_clicker()
-    elif key == Key.esc:
-        global running
-        running = False
-        global stop_thread
-        stop_thread = True
 
 
 def start_listener():
-    with Listener(on_press=on_press) as listener:
-        listener.join()
+    keyboard.on_press(on_press)
+    keyboard.wait('esc')
 
 
 if __name__ == '__main__':
